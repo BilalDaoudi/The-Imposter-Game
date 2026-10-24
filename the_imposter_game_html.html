@@ -1,0 +1,1925 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <title>لعبة المحتال | The Imposter Game</title>
+        <!-- Tailwind CSS -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        imposter: {
+                            red: '#ff2a5f',
+                            purple: '#7c3aed',
+                            dark: '#0f172a',
+                            card: '#1e293b',
+                            accent: '#06b6d4'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Tajawal', 'Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 3s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-8px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Tajawal:wght@400;500;700;800;900&display=swap"
+            rel="stylesheet">
+        <!-- FontAwesome Icons -->
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        body {
+            font-family: 'Tajawal', 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #f8fafc;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+        /* Custom Glowing Card Effects */
+        .glow-red {
+            box-shadow: 0 0 25px rgba(255, 42, 95, 0.3);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.3);
+        }
+        .glow-purple {
+            box-shadow: 0 0 25px rgba(124, 58, 237, 0.3);
+        }
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        /* Reveal Hold Button Ripple Animation */
+        .hold-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .hold-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 100%;
+            background: rgba(255, 42, 95, 0.4);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        /* Custom Scrollbar for Word Manager */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(124, 58, 237, 0.5);
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 42, 95, 0.8);
+        }
+    </style>
+    </head>
+    <body
+        class="min-h-screen flex flex-col justify-between p-4 max-w-lg mx-auto relative antialiased selection:bg-rose-500 selection:text-white">
+
+        <!-- Top Navigation Bar -->
+        <header
+            class="flex items-center justify-between py-2 mb-2 glass-panel rounded-2xl px-4 z-20">
+            <div class="flex items-center gap-2">
+                <div
+                    class="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-600 to-purple-600 flex items-center justify-center font-black text-lg text-white shadow-lg shadow-rose-600/30">
+                    🕵️
+                </div>
+                <span
+                    class="font-extrabold text-base tracking-tight bg-gradient-to-r from-rose-400 via-purple-300 to-cyan-400 bg-clip-text text-transparent"
+                    id="appLogoTitle">
+                    المحتال
+                </span>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- Audio Toggle Button -->
+                <button id="soundToggleBtn" aria-label="Toggle Sound"
+                    class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-all border border-slate-700">
+                    <i class="fa-solid fa-volume-high text-sm"></i>
+                </button>
+                <!-- Language Selector Button -->
+                <button id="langToggleBtn" aria-label="Toggle Language"
+                    class="p-2 px-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-xs font-bold text-rose-400 transition-all border border-slate-700 flex items-center gap-1.5">
+                    <i class="fa-solid fa-globe"></i>
+                    <span id="langLabel">العربية</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Container Screens -->
+        <main class="flex-1 flex flex-col justify-center my-auto z-10 py-2">
+
+            <!-- ========================================= -->
+            <!-- SCREEN 1: SETUP PHASE                     -->
+            <!-- ========================================= -->
+            <section id="screenSetup" class="flex flex-col gap-5 w-full">
+
+                <!-- Hero Title Banner -->
+                <div class="text-center space-y-1">
+                    <h1
+                        class="text-3xl font-black tracking-wide text-white flex items-center justify-center gap-2">
+                        <span>🕵️‍♂️</span> <span id="txtMainTitle">من هو
+                            المحتال؟</span>
+                    </h1>
+                    <p class="text-xs text-slate-400" id="txtMainSubtitle">لعبة
+                        التخمين والخداع الجماعية للجلسات</p>
+                </div>
+
+                <!-- Player Management Card -->
+                <div class="glass-panel p-4 rounded-2xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h2
+                            class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                            <i class="fa-solid fa-users text-rose-400"></i>
+                            <span id="txtPlayersHeader">اللاعبين</span>
+                            <span id="playerCountBadge"
+                                class="px-2 py-0.5 rounded-full text-xs bg-rose-500/20 text-rose-300 font-bold">4</span>
+                        </h2>
+                        <span class="text-xs text-slate-400"
+                            id="txtMinMaxPlayers">(3+ لاعبين)</span>
+                    </div>
+
+                    <!-- Input to Add Player -->
+                    <div class="flex gap-2">
+                        <input type="text" id="playerNameInput" maxlength="16"
+                            placeholder="اسم اللاعب..."
+                            class="flex-1 bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-rose-500 transition">
+                        <button id="addPlayerBtn"
+                            class="bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold px-4 py-2 rounded-xl text-sm transition shadow-lg shadow-rose-600/20">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+
+                    <!-- Players Tag List -->
+                    <div id="playersList"
+                        class="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1 pt-1">
+                        <!-- Dynamic Badges Inserted Here -->
+                    </div>
+                </div>
+
+                <!-- Game Options Card -->
+                <div class="glass-panel p-4 rounded-2xl space-y-4">
+
+                    <!-- Flexible Imposter Count Selector -->
+                    <div class="flex items-center justify-between">
+                        <div class="space-y-0.5">
+                            <label
+                                class="text-sm font-bold text-slate-200 block"
+                                id="txtImpostersHeader">عدد المحتالين</label>
+                            <p class="text-[11px] text-slate-400"
+                                id="txtImposterDesc">كم شخص لا يعرف الكلمة؟</p>
+                        </div>
+                        <div class="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-700/80 gap-2">
+                            <button id="decImposterBtn"
+                                class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-400 font-bold text-base flex items-center justify-center transition active:scale-95">
+                                <i class="fa-solid fa-minus text-xs"></i>
+                            </button>
+                            <span id="imposterCountDisplay" class="text-sm font-extrabold text-white px-2">1</span>
+                            <button id="incImposterBtn"
+                                class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-400 font-bold text-base flex items-center justify-center transition active:scale-95">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Hint Option Toggle -->
+                    <div
+                        class="flex items-center justify-between pt-2 border-t border-slate-700/50">
+                        <div class="space-y-0.5">
+                            <label
+                                class="text-sm font-bold text-slate-200 block"
+                                id="txtHintHeader">إعطاء تلميح للمحتال</label>
+                            <p class="text-[11px] text-slate-400"
+                                id="txtHintDesc">يصل للمحتال اسم التصنيف كـتلميح</p>
+                        </div>
+                        <button id="hintToggleBtn"
+                            class="w-12 h-6 bg-rose-600 rounded-full relative p-0.5 transition-colors focus:outline-none">
+                            <div
+                                class="w-5 h-5 bg-white rounded-full transition-transform transform translate-x-6 ltr:-translate-x-6 shadow"></div>
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Multi Category Picker Card -->
+                <div class="glass-panel p-4 rounded-2xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-sm font-bold text-slate-200 flex items-center gap-1.5">
+                            <i class="fa-solid fa-layer-group text-purple-400"></i>
+                            <span id="txtCategoryHeader">اختر التصنيفات</span>
+                            <span id="selectedCatCountBadge" class="px-2 py-0.5 rounded-full text-[11px] bg-purple-500/20 text-purple-300 font-bold">1</span>
+                        </h2>
+                        <div class="flex gap-2">
+                            <button id="btnManageWords" class="text-xs text-cyan-400 font-bold hover:underline flex items-center gap-1">
+                                <i class="fa-solid fa-list-check"></i>
+                                <span id="txtBtnManageWords">إدارة الكلمات</span>
+                            </button>
+                            <button id="btnToggleSelectAllCats" class="text-xs text-rose-400 font-bold hover:underline">
+                                <span id="txtSelectAll">الكل</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="categoryGrid" class="grid grid-cols-3 gap-2 max-h-56 overflow-y-auto pr-1">
+                        <!-- Multi-selectable Categories injected dynamically -->
+                    </div>
+
+                    <!-- Custom Words Modal trigger section -->
+                    <div id="customWordsSection"
+                        class="hidden pt-2 border-t border-slate-700/50 space-y-2">
+                        <p class="text-xs text-slate-300"
+                            id="txtCustomWordsNotice">أدخل كلماتك الخاصة (كلمة بكل سطر):</p>
+                        <textarea id="customWordsInput" rows="3"
+                            class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-rose-500"
+                            placeholder="مثال:&#10;بيتزا&#10;سيارة&#10;طائرة"></textarea>
+                    </div>
+                </div>
+
+                <!-- Start Game Action Button -->
+                <button id="startGameBtn"
+                    class="w-full py-4 bg-gradient-to-r from-rose-600 via-purple-600 to-rose-600 hover:from-rose-500 hover:to-purple-500 active:scale-[0.98] text-white font-black text-lg rounded-2xl shadow-xl shadow-rose-600/30 transition-all flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-play"></i>
+                    <span id="btnStartGame">ابدأ اللعبة الآن</span>
+                </button>
+
+            </section>
+
+            <!-- ========================================= -->
+            <!-- SCREEN 2: PASS & REVEAL PHASE             -->
+            <!-- ========================================= -->
+            <section id="screenReveal"
+                class="hidden flex-col items-center justify-center gap-6 w-full my-auto py-4">
+
+                <!-- Progress Header -->
+                <div class="text-center space-y-1">
+                    <p
+                        class="text-xs uppercase tracking-widest text-slate-400 font-bold"
+                        id="txtPassDeviceTitle">مرر الهاتف إلى</p>
+                    <h2 id="currentPlayerName"
+                        class="text-3xl font-black text-rose-400 tracking-tight">اللاعب</h2>
+                    <div class="flex items-center justify-center gap-1.5 pt-1 flex-wrap max-w-xs"
+                        id="playerDotsContainer">
+                        <!-- Dots indicating player sequence -->
+                    </div>
+                </div>
+
+                <!-- Secret Card Envelope Box -->
+                <div
+                    class="w-full relative aspect-[4/5] max-h-[380px] rounded-3xl glass-panel p-6 flex flex-col items-center justify-between border-2 border-slate-700/80 shadow-2xl overflow-hidden text-center transition-all"
+                    id="secretCardBox">
+
+                    <!-- Hidden State Content -->
+                    <div id="cardHiddenView"
+                        class="flex-1 flex flex-col items-center justify-center gap-4 my-auto">
+                        <div
+                            class="w-20 h-20 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-4xl text-rose-400 animate-float">
+                            🔒
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-100"
+                                id="txtHoldToReveal">اضغط باستمرار للرؤية</h3>
+                            <p class="text-xs text-slate-400 mt-1"
+                                id="txtKeepSecretNotice">تأكد أن لا أحد ينظر إلى الشاشة غيرك</p>
+                        </div>
+                    </div>
+
+                    <!-- Revealed State Content -->
+                    <div id="cardRevealedView"
+                        class="hidden flex-1 flex flex-col items-center justify-center gap-4 my-auto">
+                        <!-- Normal Player View -->
+                        <div id="roleNormalView" class="hidden space-y-3">
+                            <span
+                                class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-xs font-bold border border-emerald-500/30">
+                                <i class="fa-solid fa-user-check ml-1"></i>
+                                <span id="txtRoleNormalLabel">أنت مواطن صالح</span>
+                            </span>
+                            <p class="text-xs text-slate-400"
+                                id="txtSecretWordIs">الكلمة السرية هي:</p>
+                            <h2 id="secretWordDisplay"
+                                class="text-3xl font-black text-cyan-300 tracking-wide glow-cyan p-3 rounded-2xl bg-slate-900/80 border border-cyan-500/40">
+                                موز
+                            </h2>
+                        </div>
+
+                        <!-- Imposter View -->
+                        <div id="roleImposterView" class="hidden space-y-3">
+                            <span
+                                class="px-3 py-1 bg-rose-500/20 text-rose-400 rounded-full text-xs font-bold border border-rose-500/30 animate-pulse">
+                                <i class="fa-solid fa-user-ninja ml-1"></i>
+                                <span id="txtRoleImposterLabel">أنت المحتال!</span>
+                            </span>
+                            <p
+                                class="text-xs text-slate-300 leading-relaxed px-2"
+                                id="txtImposterInstruction">أنت لا تعرف الكلمة! حاول التمويه وتقليد الآخرين دون أن يُكشف أمرك.</p>
+                            <div id="imposterHintBox"
+                                class="hidden text-xs bg-purple-900/40 border border-purple-500/40 text-purple-200 p-2.5 rounded-xl font-semibold">
+                                <span id="txtHintLabel">تلميح التصنيف:</span>
+                                <span id="imposterHintText"
+                                    class="font-bold text-purple-300">طعام</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Hold Action Button -->
+                    <button id="holdRevealBtn"
+                        class="hold-btn w-full py-4 bg-rose-600 hover:bg-rose-500 text-white font-extrabold rounded-2xl shadow-lg shadow-rose-600/30 transition active:scale-[0.99]">
+                        <div class="hold-progress" id="holdProgressBar"></div>
+                        <span
+                            class="relative z-10 flex items-center justify-center gap-2"
+                            id="txtBtnHoldText">
+                            <i class="fa-solid fa-eye"></i> اضغط واستمر للإظهار
+                        </span>
+                    </button>
+
+                </div>
+
+                <!-- Next Player Confirm Button (Appears after secret is seen) -->
+                <button id="nextPlayerBtn"
+                    class="hidden w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-2xl border border-slate-700 transition flex items-center justify-center gap-2">
+                    <span id="txtBtnNextPlayer">اخفِ ومرر للاعب التالي</span>
+                    <i class="fa-solid fa-arrow-left ltr:rotate-180"></i>
+                </button>
+
+            </section>
+
+            <!-- ========================================= -->
+            <!-- SCREEN 3: GAMEPLAY & DISCUSSION PHASE    -->
+            <!-- ========================================= -->
+            <section id="screenGameplay" class="hidden flex-col gap-4 w-full">
+
+                <!-- Turn Order Banner -->
+                <div
+                    class="glass-panel p-4 rounded-2xl text-center space-y-2 border-l-4 border-rose-500">
+                    <span
+                        class="text-xs text-rose-400 font-bold uppercase tracking-wider"
+                        id="txtClueRoundTitle">جولة التلميحات</span>
+                    <p class="text-xs text-slate-300" id="txtClueDesc">يقول كل لاعب كلمة واحدة فقط مرتبطة بالكلمة السرية:</p>
+                    <div
+                        class="p-3 bg-slate-900/90 rounded-xl border border-slate-700 flex items-center justify-between">
+                        <span class="text-xs text-slate-400"
+                            id="txtFirstTurnLabel">يبدأ اللاعب:</span>
+                        <span id="firstPlayerName"
+                            class="text-base font-extrabold text-cyan-300">أحمد</span>
+                    </div>
+                </div>
+
+                <!-- Integrated Discussion Timer -->
+                <div
+                    class="glass-panel p-5 rounded-2xl flex flex-col items-center justify-center gap-3">
+                    <span class="text-xs font-bold text-slate-400"
+                        id="txtTimerTitle">وقت النقاش والتخمين</span>
+
+                    <div id="timerDisplay"
+                        class="text-5xl font-black font-mono tracking-wider text-slate-100">
+                        03:00
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full max-w-xs">
+                        <button id="timerToggleBtn"
+                            class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-rose-600/20">
+                            <i class="fa-solid fa-play" id="timerIcon"></i>
+                            <span id="txtBtnStartTimer">بدء التوقيت</span>
+                        </button>
+                        <button id="timerResetBtn"
+                            class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs border border-slate-700 transition">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Icebreaker Random Question Prompt -->
+                <div class="glass-panel p-4 rounded-2xl space-y-2 text-center">
+                    <div
+                        class="flex items-center justify-between text-xs text-slate-400">
+                        <span><i
+                                class="fa-solid fa-comments text-cyan-400 ml-1"></i>
+                            <span id="txtIcebreakerTitle">مساعد النقاش</span></span>
+                        <button id="nextQuestionBtn"
+                            class="text-rose-400 font-bold hover:underline flex items-center gap-1">
+                            <i
+                                class="fa-solid fa-arrows-rotate text-[10px]"></i>
+                            <span id="txtBtnNewQuestion">سؤال جديد</span>
+                        </button>
+                    </div>
+                    <p id="questionBox"
+                        class="text-xs sm:text-sm font-semibold text-slate-200 bg-slate-900/60 p-3 rounded-xl border border-slate-700/60 italic">
+                        "اسأل اللاعب الذي على يمينك: هل هذا الشيء يؤكل في الفطور؟"
+                    </p>
+                </div>
+
+                <!-- Proceed to Voting Button -->
+                <button id="goToVoteBtn"
+                    class="w-full py-4 bg-gradient-to-r from-rose-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 active:scale-[0.98] text-white font-extrabold text-base rounded-2xl shadow-xl shadow-rose-600/25 transition flex items-center justify-center gap-2 mt-2">
+                    <i class="fa-solid fa-check-to-slot"></i>
+                    <span id="btnStartVoting">الانتقال إلى التصويت</span>
+                </button>
+
+            </section>
+
+            <!-- ========================================= -->
+            <!-- SCREEN 4: VOTING PHASE                    -->
+            <!-- ========================================= -->
+            <section id="screenVoting" class="hidden flex-col gap-4 w-full">
+
+                <div class="text-center space-y-1">
+                    <h2 class="text-2xl font-black text-white"
+                        id="txtVoteTitle">من تشكون أنه المحتال؟</h2>
+                    <p class="text-xs text-slate-400" id="txtVoteSubtitle">اختر الشخص الذي حصل على أعلى نسبة تصويت من المجموعة</p>
+                </div>
+
+                <!-- Players Selection Grid for Suspect -->
+                <div id="votingGrid" class="grid grid-cols-2 gap-2.5 max-h-80 overflow-y-auto pr-1">
+                    <!-- Selectable Player Cards injected dynamically -->
+                </div>
+
+                <!-- Confirm Suspect Button -->
+                <button id="confirmVoteBtn" disabled
+                    class="w-full py-3.5 bg-slate-800 text-slate-500 font-extrabold text-base rounded-2xl border border-slate-700 transition flex items-center justify-center gap-2 cursor-not-allowed">
+                    <i class="fa-solid fa-gavel"></i>
+                    <span id="btnConfirmAccusation">تأكيد الاتهام</span>
+                </button>
+
+            </section>
+
+            <!-- ========================================= -->
+            <!-- SCREEN 5: REVEAL & RESULT PHASE          -->
+            <!-- ========================================= -->
+            <section id="screenResult"
+                class="hidden flex-col items-center gap-5 w-full text-center my-auto py-2">
+
+                <!-- Result Badge & Banner -->
+                <div class="space-y-2">
+                    <div id="resultIcon"
+                        class="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-4xl shadow-xl">
+                        🕵️
+                    </div>
+                    <h2 id="resultHeadline"
+                        class="text-2xl font-black text-white tracking-tight"></h2>
+                    <p id="resultSubtext"
+                        class="text-xs text-slate-300 max-w-xs mx-auto leading-relaxed"></p>
+                </div>
+
+                <!-- Revealed Truth Box -->
+                <div
+                    class="w-full glass-panel p-4 rounded-2xl space-y-3 border border-slate-700">
+                    <div
+                        class="flex items-center justify-between text-xs pb-2 border-b border-slate-700/60">
+                        <span class="text-slate-400"
+                            id="txtLabelSecretWord">الكلمة السرية كانت:</span>
+                        <span id="resultSecretWord"
+                            class="font-extrabold text-cyan-300 text-sm">تفاح</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-400"
+                            id="txtLabelImposters">المحتال هو:</span>
+                        <span id="resultImpostersList"
+                            class="font-extrabold text-rose-400 text-sm">محمد</span>
+                    </div>
+                </div>
+
+                <!-- Imposter Comeback Guess Section (Only shown if Imposter caught) -->
+                <div id="imposterComebackSection"
+                    class="hidden w-full glass-panel p-4 rounded-2xl space-y-3 border-2 border-purple-500/50 glow-purple">
+                    <div class="space-y-1 text-right ltr:text-left">
+                        <span class="text-xs font-bold text-purple-300 block"
+                            id="txtComebackTitle">⚡ فرصة الفرار للمحتال!</span>
+                        <p class="text-[11px] text-slate-300"
+                            id="txtComebackDesc">إذا خمنت الكلمة السرية الصحيحة تفوز بالجولة فوراً!</p>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <input type="text" id="imposterGuessInput"
+                            placeholder="اكتب الكلمة هنا..."
+                            class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500">
+                        <button id="submitGuessBtn"
+                            class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition">
+                            <span id="btnSubmitGuess">تخمين</span>
+                        </button>
+                    </div>
+                    <p id="guessFeedback" class="text-xs font-bold hidden"></p>
+                </div>
+
+                <!-- Scoreboard Card -->
+                <div class="w-full glass-panel p-4 rounded-2xl space-y-2">
+                    <h3
+                        class="text-xs font-bold text-slate-400 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-trophy text-amber-400"></i>
+                        <span id="txtScoreboardTitle">جدول النقاط</span>
+                    </h3>
+                    <div class="grid grid-cols-2 gap-3 pt-1">
+                        <div
+                            class="bg-slate-900/80 p-3 rounded-xl border border-slate-700/70">
+                            <span class="text-[11px] text-slate-400 block"
+                                id="txtScoreCitizens">المواطنون</span>
+                            <span id="scoreCitizensVal"
+                                class="text-2xl font-black text-emerald-400">0</span>
+                        </div>
+                        <div
+                            class="bg-slate-900/80 p-3 rounded-xl border border-slate-700/70">
+                            <span class="text-[11px] text-slate-400 block"
+                                id="txtScoreImposters">المحتالون</span>
+                            <span id="scoreImpostersVal"
+                                class="text-2xl font-black text-rose-400">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Replay Actions -->
+                <div class="flex items-center gap-2 w-full pt-1">
+                    <button id="playAgainBtn"
+                        class="flex-1 py-3.5 bg-rose-600 hover:bg-rose-500 active:scale-[0.98] text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-rose-600/30 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span id="btnPlayAgain">جولة جديدة</span>
+                    </button>
+                    <button id="backToSetupBtn"
+                        class="py-3.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm rounded-2xl border border-slate-700 transition">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
+                </div>
+
+            </section>
+
+        </main>
+
+        <!-- ========================================= -->
+        <!-- MODAL: WORD MANAGER & DISABLE WORDS      -->
+        <!-- ========================================= -->
+        <div id="wordManagerModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="glass-panel border border-slate-700 w-full max-w-md rounded-3xl p-5 flex flex-col gap-4 max-h-[85vh] shadow-2xl">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between border-b border-slate-700/80 pb-3">
+                    <h3 class="text-base font-extrabold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-filter text-purple-400"></i>
+                        <span id="txtModalTitle">استبعاد وإدارة الكلمات</span>
+                    </h3>
+                    <button id="btnCloseModal" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Search and Category Filter -->
+                <div class="flex flex-col gap-2">
+                    <input type="text" id="wordSearchInput" placeholder="بحث عن كلمة..."
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-slate-400" id="txtWordCountInfo">الكلمات المفعلة: 0</span>
+                        <button id="btnResetDisabledWords" class="text-rose-400 hover:underline font-bold text-[11px]">
+                            <span id="txtResetDisabled">تفعيل الكل</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Words Checklist Grid -->
+                <div id="wordsManagerList" class="flex-1 overflow-y-auto space-y-4 pr-1 max-h-[50vh]">
+                    <!-- Category Word Lists dynamically injected -->
+                </div>
+
+                <button id="btnSaveWordsManager" class="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-xs transition">
+                    <span id="btnModalSave">حفظ وإغلاق</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- App Footer -->
+        <footer
+            class="text-center text-[10px] text-slate-500 py-1 border-t border-slate-800/80 mt-auto">
+            <span id="txtFooterText">لعبة المحتال المحلية • العب مع أصدقائك على جهاز واحد</span>
+        </footer>
+
+        <!-- ================================================================= -->
+        <!-- JAVASCRIPT APPLICATION CODE                                       -->
+        <!-- ================================================================= -->
+        <script>
+        // -------------------------------------------------------------
+        // 1. TRANSLATION DICTIONARIES & CATEGORY DATA
+        // -------------------------------------------------------------
+        const translations = {
+            ar: {
+                appTitle: "المحتال",
+                subtitle: "لعبة التخمين والخداع الجماعية للجلسات",
+                playersHeader: "اللاعبين",
+                minMaxPlayers: "(3+ لاعبين)",
+                placeholderName: "اسم اللاعب...",
+                impostersHeader: "عدد المحتالين",
+                imposterDesc: "كم شخص لا يعرف الكلمة؟",
+                hintHeader: "تلميح للمحتال",
+                hintDesc: "يصل للمحتال اسم التصنيف كـتلميح",
+                categoryHeader: "اختر التصنيفات",
+                selectAll: "تحديد الكل",
+                deselectAll: "إلغاء الكل",
+                btnManageWords: "إدارة الكلمات",
+                customNotice: "أدخل كلماتك الخاصة (كلمة بكل سطر):",
+                btnStartGame: "ابدأ اللعبة الآن",
+                passDeviceTitle: "مرر الهاتف إلى",
+                holdToReveal: "اضغط باستمرار للرؤية",
+                keepSecretNotice: "تأكد أن لا أحد ينظر إلى الشاشة غيرك",
+                roleNormalLabel: "أنت مواطن صالح",
+                secretWordIs: "الكلمة السرية هي:",
+                roleImposterLabel: "أنت المحتال!",
+                imposterInstruction: "أنت لا تعرف الكلمة! حاول التمويه وتقليد الآخرين دون أن يُكشف أمرك.",
+                hintLabel: "تلميح التصنيف:",
+                btnHoldText: "اضغط واستمر للإظهار",
+                btnNextPlayer: "اخفِ ومرر للاعب التالي",
+                clueRoundTitle: "جولة التلميحات",
+                clueDesc: "يقول كل لاعب كلمة واحدة فقط مرتبطة بالكلمة السرية:",
+                firstTurnLabel: "يبدأ اللاعب:",
+                timerTitle: "وقت النقاش والتخمين",
+                btnStartTimer: "بدء التوقيت",
+                btnPauseTimer: "إيقاف مؤقت",
+                icebreakerTitle: "مساعد النقاش",
+                btnNewQuestion: "سؤال جديد",
+                btnStartVoting: "الانتقال إلى التصويت",
+                voteTitle: "من تشكون أنه المحتال؟",
+                voteSubtitle: "اختر الشخص الذي حصل على أعلى نسبة تصويت من المجموعة",
+                btnConfirmAccusation: "تأكيد الاتهام",
+                labelSecretWord: "الكلمة السرية كانت:",
+                labelImposters: "المحتال هو:",
+                comebackTitle: "⚡ فرصة الفرار للمحتال!",
+                comebackDesc: "إذا خمنت الكلمة السرية الصحيحة تفوز بالجولة فوراً!",
+                btnSubmitGuess: "تخمين",
+                scoreboardTitle: "جدول النقاط",
+                scoreCitizens: "المواطنون",
+                scoreImposters: "المحتالون",
+                btnPlayAgain: "جولة جديدة",
+                footerText: "لعبة المحتال المحلية • العب مع أصدقائك على جهاز واحد",
+                winCitizensHeadline: "فاز المواطنون! 🎉",
+                winCitizensSub: "لقد تم كشف المحتال بنجاح وحماية الكلمة السرية!",
+                winImposterHeadline: "فاز المحتال! 🕵️‍♂️",
+                winImposterSub: "نجح المحتال في التمويه والخداع دون أن يكتشفه أحد!",
+                guessSuccess: "تخمين صحيح! المحتال سرق الفوز! 😱",
+                guessWrong: "تخمين خاطئ! فاز المواطنون بالكامل! 🏆",
+                modalTitle: "استبعاد وإدارة الكلمات",
+                resetDisabled: "تفعيل الكل",
+                modalSave: "حفظ وإغلاق",
+                noCategorySelectedErr: "يرجى اختيار تصنيف واحد على الأقل!"
+            },
+            fr: {
+                appTitle: "Le Suspect",
+                subtitle: "Jeu de déduction et de tromperie entre amis",
+                playersHeader: "Joueurs",
+                minMaxPlayers: "(3+ joueurs)",
+                placeholderName: "Nom du joueur...",
+                impostersHeader: "Nombre d'imposteurs",
+                imposterDesc: "Combien de personnes ignorent le mot ?",
+                hintHeader: "Indice pour l'imposteur",
+                hintDesc: "L'imposteur reçoit le nom de la catégorie",
+                categoryHeader: "Choisir les catégories",
+                selectAll: "Tout cocher",
+                deselectAll: "Tout décocher",
+                btnManageWords: "Gérer les mots",
+                customNotice: "Entrez vos propres mots (un par ligne) :",
+                btnStartGame: "Commencer la partie",
+                passDeviceTitle: "Passez le téléphone à",
+                holdToReveal: "Maintenez pour révéler",
+                keepSecretNotice: "Assurez-vous que personne d'autre ne regarde",
+                roleNormalLabel: "Vous êtes Innocent",
+                secretWordIs: "Le mot secret est :",
+                roleImposterLabel: "Vous êtes L'IMPOSTEUR !",
+                imposterInstruction: "Vous ne connaissez pas le mot ! Bluffez et fondés-vous dans le décor.",
+                hintLabel: "Indice Catégorie :",
+                btnHoldText: "Maintenir appuyé pour voir",
+                btnNextPlayer: "Masquer et passer au suivant",
+                clueRoundTitle: "Tour d'indices",
+                clueDesc: "Chaque joueur donne un seul mot lié au mot secret :",
+                firstTurnLabel: "Le premier à parler :",
+                timerTitle: "Temps de discussion",
+                btnStartTimer: "Lancer le chrono",
+                btnPauseTimer: "Pause",
+                icebreakerTitle: "Relance de débat",
+                btnNewQuestion: "Nouvelle question",
+                btnStartVoting: "Passer au vote",
+                voteTitle: "Qui soupçonnez-vous ?",
+                voteSubtitle: "Sélectionnez le joueur désigné par le groupe",
+                btnConfirmAccusation: "Confirmer l'accusation",
+                labelSecretWord: "Le mot secret était :",
+                labelImposters: "L'imposteur était :",
+                comebackTitle: "⚡ Ultime chance de l'imposteur !",
+                comebackDesc: "Si l'imposteur devine le mot secret, il gagne la partie !",
+                btnSubmitGuess: "Deviner",
+                scoreboardTitle: "Tableau des scores",
+                scoreCitizens: "Innocents",
+                scoreImposters: "Imposteurs",
+                btnPlayAgain: "Nouvelle manche",
+                footerText: "Jeu du Suspect local • Jouez ensemble sur un seul appareil",
+                winCitizensHeadline: "Victoire des Innocents ! 🎉",
+                winCitizensSub: "L'imposteur a été démasqué avec succès !",
+                winImposterHeadline: "L'Imposteur a gagné ! 🕵️‍♂️",
+                winImposterSub: "L'imposteur a réussi à duper tout le monde !",
+                guessSuccess: "Bonne réponse ! L'imposteur vole la victoire ! 😱",
+                guessWrong: "Mauvaise réponse ! Les innocents l'emportent ! 🏆",
+                modalTitle: "Exclure & Gérer les mots",
+                resetDisabled: "Tout réactiver",
+                modalSave: "Enregistrer et fermer",
+                noCategorySelectedErr: "Veuillez choisir au moins une catégorie !"
+            },
+            en: {
+                appTitle: "The Imposter",
+                subtitle: "Party game of deduction, deception & bluffing",
+                playersHeader: "Players",
+                minMaxPlayers: "(3+ players)",
+                placeholderName: "Player name...",
+                impostersHeader: "Imposter Count",
+                imposterDesc: "How many players don't know the word?",
+                hintHeader: "Show Imposter Hint",
+                hintDesc: "Imposter gets the category name as a hint",
+                categoryHeader: "Select Categories",
+                selectAll: "Select All",
+                deselectAll: "Deselect All",
+                btnManageWords: "Manage Words",
+                customNotice: "Enter custom words (one per line):",
+                btnStartGame: "Start Game Now",
+                passDeviceTitle: "Pass device to",
+                holdToReveal: "Press & Hold to reveal",
+                keepSecretNotice: "Make sure no one else is looking",
+                roleNormalLabel: "You are Innocent",
+                secretWordIs: "The secret word is:",
+                roleImposterLabel: "You are THE IMPOSTER!",
+                imposterInstruction: "You don't know the word! Bluff and blend in without getting caught.",
+                hintLabel: "Category Hint:",
+                btnHoldText: "Hold to reveal role",
+                btnNextPlayer: "Hide & pass to next player",
+                clueRoundTitle: "Clue Round",
+                clueDesc: "Each player gives exactly one word clue related to the secret word:",
+                firstTurnLabel: "First clue by:",
+                timerTitle: "Discussion Timer",
+                btnStartTimer: "Start Timer",
+                btnPauseTimer: "Pause Timer",
+                icebreakerTitle: "Discussion Starter",
+                btnNewQuestion: "New Question",
+                btnStartVoting: "Proceed to Vote",
+                voteTitle: "Who is the Imposter?",
+                voteSubtitle: "Select the player voted out by the group",
+                btnConfirmAccusation: "Confirm Accusation",
+                labelSecretWord: "The secret word was:",
+                labelImposters: "The Imposter was:",
+                comebackTitle: "⚡ Imposter Last Chance!",
+                comebackDesc: "If the imposter guesses the secret word, they snatch the victory!",
+                btnSubmitGuess: "Guess",
+                scoreboardTitle: "Scoreboard",
+                scoreCitizens: "Innocents",
+                scoreImposters: "Imposters",
+                btnPlayAgain: "Next Round",
+                footerText: "The Imposter Local Game • Pass & Play around one screen",
+                winCitizensHeadline: "Innocents Won! 🎉",
+                winCitizensSub: "The imposter was caught and the secret remains safe!",
+                winImposterHeadline: "Imposter Won! 🕵️‍♂️",
+                winImposterSub: "The imposter successfully fooled everyone!",
+                guessSuccess: "Correct guess! The Imposter stole the win! 😱",
+                guessWrong: "Wrong guess! Innocents take the final win! 🏆",
+                modalTitle: "Disable & Manage Words",
+                resetDisabled: "Enable All",
+                modalSave: "Save & Close",
+                noCategorySelectedErr: "Please select at least one category!"
+            }
+        };
+
+        const defaultCategories = [
+            {
+                id: 'food',
+                icon: '🍕',
+                names: { ar: 'أطعمة ومأكولات', fr: 'Nourriture', en: 'Food & Drinks' },
+                words: {
+                    ar: [
+                        'طاجين', 'كسكس', 'بسطيلة', 'حريرة', 'شباكية', 'رفيسة', 'سفة', 'طنجية', 'مسمن', 'بغرير',
+                        'أتاي', 'بيتزا', 'برجر', 'شاورما', 'سوشي', 'شوكولاتة', 'آيس كريم', 'فلافل', 'قهوة', 'عصير برتقال',
+                        'معكرونة', 'بقلاوة', 'شاي بالنعناع', 'كيك', 'حليب', 'حساء', 'سلطة مغربية', 'خبز الدار', 'جبن', 'كرواسون',
+                        'دونات', 'بان كيك', 'تاكو', 'ساندويتش', 'كعب الغزال', 'كبسة', 'شاي', 'سلطة', 'خبز', 'سمك ماديرا',
+                        'جمبري', 'أرز', 'لحم مشوي', 'دجاج متبل', 'عسل', 'مربى', 'بطاطس مقلية', 'عصير ليمون', 'كابتشينو', 'وافل'
+                    ],
+                    fr: [
+                        'Tajine', 'Couscous', 'Pastilla', 'Harira', 'Chebakia', 'Rfissa', 'Seffa', 'Tanjia', 'Msemmen', 'Beghrir',
+                        'Thé à la menthe', 'Pizza', 'Burger', 'Tacos', 'Sushi', 'Chocolat', 'Gaufre', 'Fromage', 'Croissant', 'Café',
+                        'Pâtes', 'Gâteau', 'Glace', 'Salade marocaine', 'Pain de maison', 'Cornes de gazelle', "Jus d'orange", 'Donut', 'Pancakes', 'Sandwich',
+                        'Crevette', 'Riz', 'Poulet', 'Steak', 'Miel', 'Paëlla', 'Salade', 'Soupe', 'Pain', 'Thé',
+                        'Confiture', 'Frites', 'Limonade', 'Cappuccino', 'Omelette', 'Lasagnes', 'Tarte', 'Chocolat chaud', 'Biscuits'
+                    ],
+                    en: [
+                        'Tajine', 'Couscous', 'Pastilla', 'Harira', 'Chebakia', 'Rfissa', 'Seffa', 'Tanjia', 'Msemmen', 'Beghrir',
+                        'Mint Tea', 'Pizza', 'Burger', 'Sushi', 'Tacos', 'Chocolate', 'Ice Cream', 'Coffee', 'Pasta', 'Pancakes',
+                        'Donut', 'Sandwich', 'Cake', 'Cheese', 'Croissant', 'Soup', 'Moroccan Salad', 'Homemade Bread', 'Gazelle Horns', 'Orange Juice',
+                        'Shrimp', 'Rice', 'Grilled Chicken', 'Steak', 'Honey', 'Tea', 'Salad', 'Bread', 'Jam', 'French Fries',
+                        'Lemonade', 'Cappuccino', 'Waffle', 'Omelette', 'Lasagna', 'Pie', 'Hot Chocolate', 'Cookies', 'Milkshake'
+                    ]
+                }
+            },
+            {
+                id: 'sports',
+                icon: '⚽',
+                names: { ar: 'رياضة وهوايات', fr: 'Sports & Loisirs', en: 'Sports & Hobbies' },
+                words: {
+                    ar: [
+                        'كرة القدم', 'كرة السلة', 'السباحة', 'التنس', 'الشطرنج', 'الملاكمة', 'الرسم', 'الجري', 'التصوير', 'الرماية',
+                        'كرة الطائرة', 'الكاراتيه', 'الجمباز', 'رغبي', 'التزلج', 'التخييم', 'الصيد', 'الرقص', 'المشي', 'الدراجات',
+                        'اليوغا', 'البولينج', 'الجولف', 'تنس الطاولة', 'الفروسية', 'تسلق الجبال', 'الغوص', 'القراءة', 'العزف', 'الطبخ',
+                        'الخياطة', 'الألعاب الإلكترونية', 'البلياردو', 'المصارعة', 'التجديف', 'أسود الأطلس', 'العزف على العود'
+                    ],
+                    fr: [
+                        'Football', 'Basket', 'Natation', 'Tennis', 'Échecs', 'Boxe', 'Peinture', 'Course', 'Jardinage', 'Yoga',
+                        'Volleyball', 'Karaté', 'Gymnastique', 'Rugby', 'Ski', 'Camping', 'Pêche', 'Danse', 'Randonnée', 'Cyclisme',
+                        'Bowling', 'Golf', 'Ping-pong', 'Équitation', 'Escalade', 'Plongée', 'Lecture', 'Musique', 'Cuisine', 'Couture',
+                        'Jeux vidéo', 'Billard', 'Lutte', 'Aviron', 'Skate', 'Lions de l\'Atlas', 'Jeu d\'Oud'
+                    ],
+                    en: [
+                        'Soccer', 'Basketball', 'Swimming', 'Tennis', 'Chess', 'Boxing', 'Painting', 'Running', 'Photography', 'Gaming',
+                        'Volleyball', 'Karate', 'Gymnastics', 'Rugby', 'Skiing', 'Camping', 'Fishing', 'Dancing', 'Hiking', 'Cycling',
+                        'Yoga', 'Bowling', 'Golf', 'Table Tennis', 'Horse Riding', 'Climbing', 'Diving', 'Reading', 'Gardening', 'Cooking',
+                        'Sewing', 'Billiards', 'Wrestling', 'Rowing', 'Skateboarding', 'Atlas Lions', 'Oud Playing'
+                    ]
+                }
+            },
+            {
+                id: 'places',
+                icon: '✈️',
+                names: { ar: 'سفر وأماكن', fr: 'Voyages & Lieux', en: 'Travel & Places' },
+                words: {
+                    ar: [
+                        'جامع الفنا', 'مراكش', 'الدار البيضاء', 'شفشاون', 'فاس', 'صحراء مرزوكة', 'مطار', 'مستشفى', 'مدرسة', 'شاطئ',
+                        'متحف', 'حديقة حيوان', 'مطعم', 'فندق', 'محطة قطار البراق', 'مكتبة', 'سوق تقليدي', 'جامعة', 'ملعب', 'حديقة عجيبة',
+                        'ميناء', 'مسرح', 'سينما', 'جبل طوبقال', 'غابة', 'جزيرة', 'شلالات أوزود', 'قصبة', 'جسر', 'برج الحسان',
+                        'مسجد الحسن الثاني', 'بنك', 'صيدلية', 'مخبز', 'مركز تجاري', 'محطة قطار', 'صحراء', 'سوق', 'حديقة العامة',
+                        'جبل', 'شلال', 'قلعة', 'برج', 'مسجد', 'كنيسة', 'محطة بنزين', 'قرية', 'عاصمة', 'كهف'
+                    ],
+                    fr: [
+                        'Jemaa el-Fna', 'Marrakech', 'Casablanca', 'Chefchaouen', 'Fès', 'Désert de Merzouga', 'Aéroport', 'Hôpital', 'École', 'Plage',
+                        'Musée', 'Zoo', 'Restaurant', 'Hôtel', 'Gare Al Boraq', 'Bibliothèque', 'Souk', 'Université', 'Stade', 'Jardin',
+                        'Port', 'Théâtre', 'Cinéma', 'Mont Toubkal', 'Forêt', 'Île', "Cascades d'Ouzoud", 'Kasbah', 'Pont', 'Tour Hassan',
+                        'Mosquée Hassan II', 'Banque', 'Pharmacie', 'Boulangerie', 'Centre commercial', 'Gare', 'Désert', 'Marché', 'Parc',
+                        'Montagne', 'Cascade', 'Château', 'Tour', 'Mosquée', 'Église', 'Station-service', 'Village', 'Capitale', 'Grotte'
+                    ],
+                    en: [
+                        'Jemaa el-Fna', 'Marrakech', 'Casablanca', 'Chefchaouen', 'Fez', 'Merzouga Desert', 'Airport', 'Hospital', 'School', 'Beach',
+                        'Museum', 'Zoo', 'Restaurant', 'Hotel', 'Al Boraq Station', 'Library', 'Traditional Souk', 'University', 'Stadium', 'Park',
+                        'Port', 'Theater', 'Cinema', 'Mount Toubkal', 'Forest', 'Island', 'Ouzoud Waterfalls', 'Kasbah', 'Bridge', 'Hassan Tower',
+                        'Hassan II Mosque', 'Bank', 'Pharmacy', 'Bakery', 'Shopping Mall', 'Train Station', 'Desert', 'Market', 'Mountain',
+                        'Waterfall', 'Castle', 'Tower', 'Mosque', 'Church', 'Gas Station', 'Village', 'Capital', 'Cave'
+                    ]
+                }
+            },
+            {
+                id: 'movies',
+                icon: '🎬',
+                names: { ar: 'سينما وثقافة', fr: 'Cinéma & Pop', en: 'Movies & Culture' },
+                words: {
+                    ar: [
+                        'مهرجان مراكش', 'تيتانيك', 'باتمان', 'هاري بوتر', 'سبايدرمان', 'أفنجرز', 'كرتون', 'سينما', 'مسرح', 'كاميرا',
+                        'هوليود', 'مخرج', 'ممثل', 'سجادة حمراء', 'جائزة أوسكار', 'فشار', 'فيلم وثائقي', 'مسلسل رمضاني', 'سيناريو', 'أنيميشن',
+                        'بطل خارق', 'خيال علمي', 'رعب', 'كوميديا', 'دراما', 'موسيقى تصويرية', 'مؤثرات بصرية', 'شاشة عملاقة', 'تذاكر', 'إعلان تشويقي',
+                        'استوديو ورزازات', 'جيمس بوند', 'جوكر', 'ديزني', 'نتفليكس', 'مسلسل', 'مؤثرات بصري', 'ستوديو', 'شرير'
+                    ],
+                    fr: [
+                        'Festival de Marrakech', 'Titanic', 'Batman', 'Harry Potter', 'Spider-Man', 'Cinema', 'Acteur', 'Popcorn', 'Caméra', 'Netflix',
+                        'Réalisateur', 'Tapis rouge', 'Oscar', 'Documentaire', 'Série de Ramadan', 'Scénario', 'Animation', 'Super-héros', 'Science-fiction', 'Horreur',
+                        'Comédie', 'Drame', 'Bande originale', 'Effets spéciaux', 'Grand écran', 'Billet', 'Bande-annonce', 'Studio Ouarzazate', 'Hollywood', 'Avengers',
+                        'Dessin animé', 'James Bond', 'Joker', 'Disney', 'Méchants', 'Série', 'Studio', 'Théâtre'
+                    ],
+                    en: [
+                        'Marrakech Film Festival', 'Titanic', 'Batman', 'Harry Potter', 'Spider-Man', 'Avengers', 'Cinema', 'Popcorn', 'Camera', 'Netflix',
+                        'Director', 'Actor', 'Red Carpet', 'Oscar', 'Documentary', 'Ramadan Series', 'Script', 'Animation', 'Superhero', 'Sci-Fi',
+                        'Horror', 'Comedy', 'Drama', 'Soundtrack', 'Special Effects', 'Big Screen', 'Ticket', 'Trailer', 'Ouarzazate Studio', 'Hollywood',
+                        'Cartoons', 'James Bond', 'Joker', 'Disney', 'Villain', 'TV Series', 'Studio', 'Theater'
+                    ]
+                }
+            },
+            {
+                id: 'animals',
+                icon: '🐾',
+                names: { ar: 'حيوانات وطبيعة', fr: 'Animaux', en: 'Animals & Nature' },
+                words: {
+                    ar: [
+                        'جمل', 'أسد الأطلس', 'مكاك بربري', 'صقر', 'غزال', 'ثعلب الصحراء', 'أسد', 'فيل', 'بطريق', 'دولفين',
+                        'زرافة', 'قطة', 'كلب', 'نمر', 'حوت', 'حصان', 'دب', 'ذئب', 'أرنب', 'قرد',
+                        'ثعبان', 'تمساح', 'سلحفاة', 'بومة', 'عصفور', 'فراشة', 'نحلة', 'قرش', 'كانغر', 'فهد',
+                        'حمار وحشي', 'خرتيت', 'قنديل البحر', 'أخطبوط', 'خفاش', 'ثعلب', 'بجعة', 'طاووس', 'حلزون'
+                    ],
+                    fr: [
+                        'Chameau', "Lion de l'Atlas", 'Macaque berbère', 'Aigle', 'Gazelle', 'Fennec', 'Lion', 'Éléphant', 'Manchot', 'Dauphin',
+                        'Girafe', 'Chat', 'Chien', 'Tigre', 'Baleine', 'Cheval', 'Ours', 'Loup', 'Lapin', 'Singe',
+                        'Serpent', 'Crocodile', 'Tortue', 'Hibou', 'Oiseau', 'Papillon', 'Abeille', 'Requin', 'Kangourou', 'Guépard',
+                        'Zèbre', 'Rhinocéros', 'Méduse', 'Pieuvre', 'Chauve-souris', 'Renard', 'Cerf', 'Cygne', 'Paon', 'Escargot'
+                    ],
+                    en: [
+                        'Camel', 'Atlas Lion', 'Barbary Macaque', 'Eagle', 'Gazelle', 'Fennec Fox', 'Lion', 'Elephant', 'Penguin', 'Dolphin',
+                        'Giraffe', 'Cat', 'Dog', 'Tiger', 'Whale', 'Horse', 'Bear', 'Wolf', 'Rabbit', 'Monkey',
+                        'Snake', 'Crocodile', 'Turtle', 'Owl', 'Bird', 'Butterfly', 'Bee', 'Shark', 'Kangaroo', 'Cheetah',
+                        'Zebra', 'Rhino', 'Jellyfish', 'Octopus', 'Bat', 'Fox', 'Deer', 'Swan', 'Peacock', 'Snail'
+                    ]
+                }
+            },
+            {
+                id: 'technology',
+                icon: '💻',
+                names: { ar: 'تكنولوجيا وعلوم', fr: 'Technologie & Science', en: 'Tech & Science' },
+                words: {
+                    ar: [
+                        'حاسوب', 'هاتف ذكي', 'روبوت', 'إنترنت', 'شاشة', 'سماعات', 'كوكب', 'صاروخ', 'مجهر', 'ذكاء اصطناعي',
+                        'لوحة مفاتيح', 'فأرة', 'طابعة', 'كاميرا رقمية', 'خادم', 'شاحن', 'بطارية', 'برمجيات', 'تطبيق', 'قمر صناعي حاسن',
+                        'تلسكوب', 'طائرة بدون طيار', 'واقع افتراضي', 'شفرة برمجة', 'ذرة', 'مجرة', 'خلايا شمسية', 'معالج', 'قرص صلب', 'سحابة إلكترونية',
+                        'شبكة', 'ألياف ضوئية', 'مختبر', 'جينات', 'ليزر', 'قمر صناعي'
+                    ],
+                    fr: [
+                        'Ordinateur', 'Smartphone', 'Robot', 'Internet', 'Écran', 'Casque', 'Planète', 'Fusée', 'Microscope', 'Intelligence Artificielle',
+                        'Clavier', 'Souris', 'Imprimante', 'Caméra numérique', 'Serveur', 'Chargeur', 'Batterie', 'Logiciel', 'Application', 'Satellite',
+                        'Télescope', 'Drone', 'Réalité virtuelle', 'Code', 'Atome', 'Galaxie', 'Panneau solaire', 'Processeur', 'Disque dur', 'Cloud',
+                        'Réseau', 'Fibre optique', 'Laboratoire', 'Gène', 'Laser'
+                    ],
+                    en: [
+                        'Computer', 'Smartphone', 'Robot', 'Internet', 'Screen', 'Headphones', 'Planet', 'Rocket', 'Microscope', 'Artificial Intelligence',
+                        'Keyboard', 'Mouse', 'Printer', 'Digital Camera', 'Server', 'Charger', 'Battery', 'Software', 'Application', 'Satellite',
+                        'Telescope', 'Drone', 'Virtual Reality', 'Code', 'Atom', 'Galaxy', 'Solar Panel', 'Processor', 'Hard Drive', 'Cloud',
+                        'Network', 'Fiber Optics', 'Laboratory', 'Gene', 'Laser'
+                    ]
+                }
+            },
+            {
+                id: 'jobs',
+                icon: '💼',
+                names: { ar: 'مهن ووظائف', fr: 'Métiers & Professions', en: 'Jobs & Professions' },
+                words: {
+                    ar: [
+                        'طبيب', 'مهندس', 'معلم', 'شرطي', 'إطفائي', 'طباخ', 'طيار', 'رسام', 'قاضي', 'رائد فضاء',
+                        'ممرض', 'صيدلي', 'محامي', 'محاسب', 'صحفي', 'مصور', 'حارس أمن', 'مزارع', 'نجار', 'سباك',
+                        'كهربائي', 'سائق', 'خياط', 'ميكانيكي', 'حلاق', 'كاتب', 'مترجم', 'عالم', 'مهندس معماري', 'مدير',
+                        'مبرمج', 'طبيب أسنان', 'بيطري', 'مضيف طيران', 'دبلوماسي', 'نجار تقليدي', 'سائق طاكسي', 'خياط قفطان'
+                    ],
+                    fr: [
+                        'Médecin', 'Ingénieur', 'Professeur', 'Policier', 'Pompier', 'Cuisinier', 'Pilote', 'Peintre', 'Juge', 'Astronaute',
+                        'Infirmier', 'Pharmacien', 'Avocat', 'Comptable', 'Journaliste', 'Photographe', 'Agent de sécurité', 'Agriculteur', 'Menuisier', 'Plombier',
+                        'Électricien', 'Chauffeur', 'Tailleur', 'Mécanicien', 'Coiffeur', 'Écrivain', 'Traducteur', 'Scientifique', 'Architecte', 'Directeur',
+                        'Développeur', 'Dentiste', 'Vétérinaire', 'Steward', 'Diplomate', 'Artisan menuisier', 'Chauffeur de petit taxi', 'Couturier de Caftan'
+                    ],
+                    en: [
+                        'Doctor', 'Engineer', 'Teacher', 'Police Officer', 'Firefighter', 'Chef', 'Pilot', 'Painter', 'Judge', 'Astronaut',
+                        'Nurse', 'Pharmacist', 'Lawyer', 'Accountant', 'Journalist', 'Photographer', 'Security Guard', 'Farmer', 'Carpenter', 'Plumber',
+                        'Electrician', 'Driver', 'Tailor', 'Mechanic', 'Barber', 'Writer', 'Translator', 'Scientist', 'Architect', 'Manager',
+                        'Software Developer', 'Dentist', 'Veterinarian', 'Flight Attendant', 'Diplomat', 'Traditional Craftsman', 'Taxi Driver', 'Caftan Tailor'
+                    ]
+                }
+            },
+            {
+                id: 'objects',
+                icon: '🏠',
+                names: { ar: 'أشياء وأدوات', fr: 'Objets du quotidien', en: 'Everyday Objects' },
+                words: {
+                    ar: [
+                        'مفتاح', 'ساعة', 'نظارات', 'حقيبة', 'كتاب', 'قلم', 'مرآة', 'مظلة', 'مصباح', 'مقص',
+                        'وسادة', 'سرير', 'طاولة', 'كرسي', 'أريكة', 'تلفزيون', 'ثلاجة', 'فرن', 'كوب', 'طبق',
+                        'ملعقة', 'شوكة', 'سكين', 'منشفة', 'مشط', 'فرشاة أسنان', 'صابون', 'شاحن', 'ساعة حائط', 'مزهرية',
+                        'صندوق', 'سجادة', 'ستارة', 'شمعة', 'قفل', 'براد أتاي', 'طاجين فخار', 'مجمر', 'بلغة', 'كوب شاي',
+                        'صابون بلدي', 'صندوق خشبي'
+                    ],
+                    fr: [
+                        'Clé', 'Montre', 'Lunettes', 'Sac', 'Livre', 'Stylo', 'Miroir', 'Parapluie', 'Lampe', 'Ciseaux',
+                        'Oreiller', 'Lit', 'Table', 'Chaise', 'Canapé', 'Télévision', 'Réfrigérateur', 'Four', 'Tasse', 'Assiette',
+                        'Cuillère', 'Fourchette', 'Couteau', 'Serviette', 'Peigne', 'Brosse à dents', 'Savon', 'Chargeur', 'Horloge', 'Vase',
+                        'Boîte', 'Tapis', 'Rideau', 'Bougie', 'Cadenas', 'Théière marocaine', 'Tajine en terre', 'Kanoun', 'Babouche', 'Verre à thé',
+                        'Savon noir', 'Coffre en bois'
+                    ],
+                    en: [
+                        'Key', 'Watch', 'Glasses', 'Bag', 'Book', 'Pen', 'Mirror', 'Umbrella', 'Lamp', 'Scissors',
+                        'Pillow', 'Bed', 'Table', 'Chair', 'Sofa', 'Television', 'Refrigerator', 'Oven', 'Cup', 'Plate',
+                        'Spoon', 'Fork', 'Knife', 'Towel', 'Comb', 'Toothbrush', 'Soap', 'Charger', 'Clock', 'Vase',
+                        'Box', 'Carpet', 'Curtain', 'Candle', 'Lock', 'Moroccan Teapot', 'Clay Tajine', 'Kanoun Brazier', 'Babouche Slippers', 'Tea Glass',
+                        'Black Soap', 'Wooden Chest'
+                    ]
+                }
+            },
+            {
+                id: 'clothes',
+                icon: '👕',
+                names: { ar: 'ملابس وموضة', fr: 'Vêtements & Mode', en: 'Clothes & Fashion' },
+                words: {
+                    ar: [
+                        'قميص', 'بنطال', 'فستان', 'حذاء', 'قبعة', 'معطف', 'جوارب', 'وشاح', 'حقيبة يد', 'خاتم',
+                        'قلادة', 'سوار', 'نظارات شمسية', 'حزام', 'تنورة', 'سترة', 'بدلة', 'ربطة عنق', 'بيجامة', 'حذاء رياضي',
+                        'قفازات', 'حذاء كعب عالٍ', 'معطف مطر', 'قميص قطني', 'عباءة', 'زي رسمي', 'مظلة موضة', 'قرط', 'ساعة يد', 'محفظة',
+                        'شورت', 'وشاح رأس', 'حذاء جزمة', 'معطف صوف', 'ملابس سباحة', 'جلابة', 'قفطان', 'تكشيطة', 'بلغة', 'جابادور',
+                        'طرابوش'
+                    ],
+                    fr: [
+                        'Chemise', 'Pantalon', 'Robe', 'Chaussures', 'Chapeau', 'Manteau', 'Chaussettes', 'Écharpe', 'Sac à main', 'Bague',
+                        'Collier', 'Bracelet', 'Lunettes de soleil', 'Ceinture', 'Jupe', 'Veste', 'Costume', 'Cravate', 'Pyjama', 'Baskets',
+                        'Gants', 'Talons hauts', 'Imperméable', 'T-shirt', 'Abaya', 'Uniforme', 'Ombrelle', 'Boucles d\'oreilles', 'Montre', 'Portefeuille',
+                        'Short', 'Foulard', 'Bottes', 'Manteau en laine', 'Maillot de bain', 'Djellaba', 'Caftan', 'Tackchita', 'Babouches', 'Jabador',
+                        'Fez'
+                    ],
+                    en: [
+                        'Shirt', 'Pants', 'Dress', 'Shoes', 'Hat', 'Coat', 'Socks', 'Scarf', 'Handbag', 'Ring',
+                        'Necklace', 'Bracelet', 'Sunglasses', 'Belt', 'Skirt', 'Jacket', 'Suit', 'Tie', 'Pajamas', 'Sneakers',
+                        'Gloves', 'High Heels', 'Raincoat', 'T-Shirt', 'Abaya', 'Uniform', 'Parasol', 'Earrings', 'Wristwatch', 'Wallet',
+                        'Shorts', 'Headscarf', 'Boots', 'Wool Coat', 'Swimsuit', 'Djellaba', 'Caftan', 'Tackchita', 'Babouche Slippers', 'Jabador',
+                        'Fez Hat'
+                    ]
+                }
+            },
+            {
+                id: 'music',
+                icon: '🎵',
+                names: { ar: 'موسيقى وفن', fr: 'Musique & Art', en: 'Music & Art' },
+                words: {
+                    ar: [
+                        'عود', 'قراقب', 'هجهوج', 'أندلسي', 'كناوة', 'عيطة', 'أحواش', 'بيانو', 'جيتار', 'كمان',
+                        'طبلة', 'ميكروفون', 'أغنية', 'رقص', 'مسرحية', 'لوحة', 'مهرجان', 'ناي', 'سكسفون', 'مغني',
+                        'ملحن', 'فرقة موسيقية', 'أوركسترا', 'لحن', 'إيقاع', 'استوديو', 'صوت', 'سماعات رأس', 'موسيقى كلاسيكية', 'جاز',
+                        'روك', 'بوب', 'تمثال', 'فرشاة رسم', 'قيثارة', 'متحف فني', 'ألوان مائية', 'معرض', 'تصوير فوتوغرافي', 'رقص باليه',
+                        'كلمات أغنية'
+                    ],
+                    fr: [
+                        'Oud', 'Krakebs', 'Guembri', 'Musique Andalouse', 'Gnaoua', 'Aïta', 'Ahwach', 'Piano', 'Guitare', 'Violon',
+                        'Batterie', 'Microphone', 'Chanson', 'Danse', 'Théâtre', 'Tableau', 'Festival', 'Flûte', 'Saxophone', 'Chanteur',
+                        'Compositeur', 'Groupe de musique', 'Orchestre', 'Mélodie', 'Rythme', 'Studio', 'Son', 'Casque audio', 'Musique classique', 'Jazz',
+                        'Rock', 'Pop', 'Sculpture', 'Pinceau', 'Harpe', 'Luth', "Musée d'art", 'Aquarelle', 'Galerie', 'Photographie',
+                        'Ballet', 'Paroles'
+                    ],
+                    en: [
+                        'Oud', 'Krakebs', 'Guembri', 'Andalusian Music', 'Gnaoua', 'Aita', 'Ahwach', 'Piano', 'Guitar', 'Violin',
+                        'Drums', 'Microphone', 'Song', 'Dance', 'Theater', 'Painting', 'Festival', 'Flute', 'Saxophone', 'Singer',
+                        'Composer', 'Band', 'Orchestra', 'Melody', 'Rhythm', 'Studio', 'Sound', 'Headphones', 'Classical Music', 'Jazz',
+                        'Rock', 'Pop', 'Sculpture', 'Paintbrush', 'Harp', 'Lute', 'Art Museum', 'Watercolor', 'Gallery', 'Photography',
+                        'Ballet', 'Lyrics'
+                    ]
+                }
+            },
+            {
+                id: 'history',
+                icon: '🏛️',
+                names: { ar: 'تاريخ والحضارات', fr: 'Histoire & Civilisations', en: 'History & Civilizations' },
+                words: {
+                    ar: [
+                        'صومعة حسان', 'وليلي', 'المرابطون', 'الموحدون', 'السعديون', 'أهرامات', 'قلعة', 'فرعون', 'محارب', 'تاج',
+                        'قلادة', 'مملكة', 'إمبراطورية', 'خريطة قديمة', 'مومياء', 'سيف', 'درع', 'متحف تاريخي', 'برديات', 'عملة قديمة',
+                        'معبد', 'ملك', 'ملكة', 'ثورة', 'معركة', 'مؤرخ', 'آثار', 'تمثال قديم', 'سفينة حربية', 'قصبة قديمة',
+                        'عمود حجري', 'فرسان', 'وثيقة تاريخية', 'خوذة', 'عرش', 'قلعة رومانية', 'كتيبة', 'نفق', 'سلالة', 'مقبض سيف',
+                        'مقبرة ملكية'
+                    ],
+                    fr: [
+                        'Tour Hassan', 'Volubilis', 'Almoravides', 'Almohades', 'Saadiens', 'Pyramides', 'Château', 'Pharaon', 'Guerrier', 'Couronne',
+                        'Collier', 'Royaume', 'Empire', 'Carte ancienne', 'Momie', 'Épée', 'Bouclier', 'Musée historique', 'Papyrus', 'Pièce ancienne',
+                        'Temple', 'Roi', 'Reine', 'Révolution', 'Bataille', 'Historien', 'Archéologie', 'Statue ancienne', 'Navire de guerre', 'Kasbah ancienne',
+                        'Colonne de pierre', 'Chevaliers', 'Parchemin', 'Casque', 'Trône', 'Fort de guerre', 'Légion', 'Tunnel', 'Dynastie', "Garde d'épée",
+                        'Tombeau royal'
+                    ],
+                    en: [
+                        'Hassan Tower', 'Volubilis', 'Almoravids', 'Almohads', 'Saadians', 'Pyramids', 'Castle', 'Pharaoh', 'Warrior', 'Crown',
+                        'Necklace', 'Kingdom', 'Empire', 'Ancient Map', 'Mummy', 'Sword', 'Shield', 'History Museum', 'Papyrus', 'Ancient Coin',
+                        'Temple', 'King', 'Queen', 'Revolution', 'Battle', 'Historian', 'Archaeology', 'Ancient Statue', 'Warship', 'Ancient Kasbah',
+                        'Stone Column', 'Knights', 'Scroll', 'Helmet', 'Throne', 'Fortress', 'Legion', 'Tunnel', 'Dynasty', 'Hilt',
+                        'Royal Tomb'
+                    ]
+                }
+            },
+            {
+                id: 'custom',
+                icon: '💡',
+                names: { ar: 'كلمات مخصصة', fr: 'Mots personnalisés', en: 'Custom Words' },
+                words: { ar: [], fr: [], en: [] }
+            }
+        ];
+
+        const icebreakerQuestions = {
+            ar: [
+                "اسأل {P}: هل هذا الشيء خفيف أم ثقيل؟",
+                "اسأل {P}: هل يمكن شراء هذا الشيء بالمال؟",
+                "اسأل {P}: متى كانت آخر مرة استخدمت هذا الشيء؟",
+                "اسأل {P}: هل يتواجد هذا الشيء عادة في المنزل؟",
+                "اسأل {P}: هل لون هذا الشيء ملفت؟"
+            ],
+            fr: [
+                "Demandez à {P} : Est-ce que cet objet est lourd ?",
+                "Demandez à {P} : Peut-on l'acheter avec de l'argent ?",
+                "Demandez à {P} : À quand remonte votre dernière utilisation de ceci ?",
+                "Demandez à {P} : Trouve-t-on ceci à la maison ?",
+                "Demandez à {P} : Quelle est la taille approximative de ceci ?"
+            ],
+            en: [
+                "Ask {P}: Is this item heavy or light?",
+                "Ask {P}: Can you buy this with money?",
+                "Ask {P}: When was the last time you saw/used this?",
+                "Ask {P}: Is this usually found inside a house?",
+                "Ask {P}: What color would you associate with this?"
+            ]
+        };
+
+        // -------------------------------------------------------------
+        // 2. STATE MANAGEMENT
+        // -------------------------------------------------------------
+        let currentLang = 'ar';
+        let soundEnabled = true;
+        let players = ['أحمد', 'سارة', 'خالد', 'فاطمة'];
+        let selectedCategories = ['food']; // Multi category support
+        let imposterCountSetting = 1;
+        let showHintSetting = true;
+        let disabledWords = new Set(); // Stores words that are excluded by user
+
+        // Game Round Runtime State
+        let currentSecretWord = '';
+        let currentCategoryHint = '';
+        let currentImposterIndices = [];
+        let currentRevealIndex = 0;
+        let selectedSuspectIndex = null;
+        let scores = { citizens: 0, imposters: 0 };
+
+        // Timer State
+        let timerInterval = null;
+        let timerSecondsLeft = 180;
+        let isTimerRunning = false;
+
+        // Sound Effects Engine
+        const AudioFX = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) this.ctx = new AudioContext();
+                }
+            },
+            playClick() {
+                if (!soundEnabled || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.05);
+            },
+            playReveal() {
+                if (!soundEnabled || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.3);
+            },
+            playVictory() {
+                if (!soundEnabled || !this.ctx) return;
+                const notes = [400, 500, 600, 800];
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime + idx * 0.1);
+                    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.1 + 0.15);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(this.ctx.currentTime + idx * 0.1);
+                    osc.stop(this.ctx.currentTime + idx * 0.1 + 0.15);
+                });
+            }
+        };
+
+        function triggerHaptic(duration = 40) {
+            if ('vibrate' in navigator) {
+                try { navigator.vibrate(duration); } catch (e) {}
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 3. UI RENDERING & TRANSLATION FUNCTIONS
+        // -------------------------------------------------------------
+        function applyTranslations() {
+            const t = translations[currentLang];
+            document.documentElement.lang = currentLang;
+            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+
+            // Text elements replacement
+            document.getElementById('appLogoTitle').textContent = t.appTitle;
+            document.getElementById('txtMainTitle').textContent = t.appTitle;
+            document.getElementById('txtMainSubtitle').textContent = t.subtitle;
+            document.getElementById('txtPlayersHeader').textContent = t.playersHeader;
+            document.getElementById('txtMinMaxPlayers').textContent = t.minMaxPlayers;
+            document.getElementById('playerNameInput').placeholder = t.placeholderName;
+            document.getElementById('txtImpostersHeader').textContent = t.impostersHeader;
+            document.getElementById('txtImposterDesc').textContent = t.imposterDesc;
+            document.getElementById('txtHintHeader').textContent = t.hintHeader;
+            document.getElementById('txtHintDesc').textContent = t.hintDesc;
+            document.getElementById('txtCategoryHeader').textContent = t.categoryHeader;
+            document.getElementById('txtBtnManageWords').textContent = t.btnManageWords;
+            document.getElementById('txtCustomWordsNotice').textContent = t.customNotice;
+            document.getElementById('btnStartGame').textContent = t.btnStartGame;
+            document.getElementById('txtPassDeviceTitle').textContent = t.passDeviceTitle;
+            document.getElementById('txtHoldToReveal').textContent = t.holdToReveal;
+            document.getElementById('txtKeepSecretNotice').textContent = t.keepSecretNotice;
+            document.getElementById('txtRoleNormalLabel').textContent = t.roleNormalLabel;
+            document.getElementById('txtSecretWordIs').textContent = t.secretWordIs;
+            document.getElementById('txtRoleImposterLabel').textContent = t.roleImposterLabel;
+            document.getElementById('txtImposterInstruction').textContent = t.imposterInstruction;
+            document.getElementById('txtHintLabel').textContent = t.hintLabel;
+            document.getElementById('txtBtnHoldText').innerHTML = `<i class="fa-solid fa-eye"></i> ${t.btnHoldText}`;
+            document.getElementById('txtBtnNextPlayer').textContent = t.btnNextPlayer;
+            document.getElementById('txtClueRoundTitle').textContent = t.clueRoundTitle;
+            document.getElementById('txtClueDesc').textContent = t.clueDesc;
+            document.getElementById('txtFirstTurnLabel').textContent = t.firstTurnLabel;
+            document.getElementById('txtTimerTitle').textContent = t.timerTitle;
+            document.getElementById('txtBtnStartTimer').textContent = isTimerRunning ? t.btnPauseTimer : t.btnStartTimer;
+            document.getElementById('txtIcebreakerTitle').textContent = t.icebreakerTitle;
+            document.getElementById('txtBtnNewQuestion').textContent = t.btnNewQuestion;
+            document.getElementById('btnStartVoting').textContent = t.btnStartVoting;
+            document.getElementById('txtVoteTitle').textContent = t.voteTitle;
+            document.getElementById('txtVoteSubtitle').textContent = t.voteSubtitle;
+            document.getElementById('btnConfirmAccusation').textContent = t.btnConfirmAccusation;
+            document.getElementById('txtLabelSecretWord').textContent = t.labelSecretWord;
+            document.getElementById('txtLabelImposters').textContent = t.labelImposters;
+            document.getElementById('txtComebackTitle').textContent = t.comebackTitle;
+            document.getElementById('txtComebackDesc').textContent = t.comebackDesc;
+            document.getElementById('btnSubmitGuess').textContent = t.btnSubmitGuess;
+            document.getElementById('txtScoreboardTitle').textContent = t.scoreboardTitle;
+            document.getElementById('txtScoreCitizens').textContent = t.scoreCitizens;
+            document.getElementById('txtScoreImposters').textContent = t.scoreImposters;
+            document.getElementById('btnPlayAgain').textContent = t.btnPlayAgain;
+            document.getElementById('txtFooterText').textContent = t.footerText;
+            document.getElementById('txtModalTitle').textContent = t.modalTitle;
+            document.getElementById('txtResetDisabled').textContent = t.resetDisabled;
+            document.getElementById('btnModalSave').textContent = t.modalSave;
+
+            updateSelectAllButtonText();
+            document.getElementById('langLabel').textContent = currentLang === 'ar' ? 'العربية' : (currentLang === 'fr' ? 'Français' : 'English');
+
+            renderCategoryGrid();
+            renderPlayersTags();
+            updateImposterCountDisplay();
+        }
+
+        function updateSelectAllButtonText() {
+            const t = translations[currentLang];
+            const allStandardIds = defaultCategories.filter(c => c.id !== 'custom').map(c => c.id);
+            const allSelected = allStandardIds.every(id => selectedCategories.includes(id));
+            document.getElementById('btnToggleSelectAllCats').textContent = allSelected ? t.deselectAll : t.selectAll;
+        }
+
+        function renderPlayersTags() {
+            const listContainer = document.getElementById('playersList');
+            listContainer.innerHTML = '';
+            
+            players.forEach((p, idx) => {
+                const tag = document.createElement('div');
+                tag.className = 'flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 border border-slate-700/80 rounded-xl text-xs font-semibold text-slate-200 animate-fadeIn';
+                tag.innerHTML = `
+                    <span>${p}</span>
+                    ${players.length > 3 ? `<button onclick="removePlayer(${idx})" class="text-slate-400 hover:text-rose-400 p-0.5"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                `;
+                listContainer.appendChild(tag);
+            });
+
+            document.getElementById('playerCountBadge').textContent = players.length;
+            validateImposterCount();
+        }
+
+        function renderCategoryGrid() {
+            const grid = document.getElementById('categoryGrid');
+            grid.innerHTML = '';
+
+            defaultCategories.forEach(cat => {
+                const isSelected = selectedCategories.includes(cat.id);
+                const catName = cat.names[currentLang] || cat.names.en;
+
+                const card = document.createElement('button');
+                card.className = `p-2.5 rounded-2xl border text-center flex flex-col items-center justify-between gap-1 transition relative ${
+                    isSelected 
+                        ? 'bg-rose-500/20 border-rose-500 text-white shadow-lg shadow-rose-500/10' 
+                        : 'bg-slate-900/60 border-slate-700/80 text-slate-400 hover:border-slate-500'
+                }`;
+                card.onclick = () => {
+                    AudioFX.playClick();
+                    if (isSelected) {
+                        selectedCategories = selectedCategories.filter(id => id !== cat.id);
+                    } else {
+                        selectedCategories.push(cat.id);
+                    }
+                    renderCategoryGrid();
+                    updateSelectAllButtonText();
+                    document.getElementById('customWordsSection').classList.toggle('hidden', !selectedCategories.includes('custom'));
+                };
+
+                card.innerHTML = `
+                    ${isSelected ? `<span class="absolute top-1.5 right-1.5 ltr:right-auto ltr:left-1.5 text-[10px] bg-rose-500 text-white w-4 h-4 rounded-full flex items-center justify-center font-bold"><i class="fa-solid fa-check text-[8px]"></i></span>` : ''}
+                    <span class="text-2xl mt-1">${cat.icon}</span>
+                    <span class="text-[11px] font-bold leading-tight line-clamp-1">${catName}</span>
+                `;
+                grid.appendChild(card);
+            });
+
+            document.getElementById('selectedCatCountBadge').textContent = selectedCategories.length;
+            document.getElementById('customWordsSection').classList.toggle('hidden', !selectedCategories.includes('custom'));
+        }
+
+        function validateImposterCount() {
+            const maxImposters = Math.max(1, players.length - 1);
+            if (imposterCountSetting > maxImposters) {
+                imposterCountSetting = maxImposters;
+            }
+            if (imposterCountSetting < 1) imposterCountSetting = 1;
+            updateImposterCountDisplay();
+        }
+
+        function updateImposterCountDisplay() {
+            document.getElementById('imposterCountDisplay').textContent = imposterCountSetting;
+        }
+
+        function switchScreen(screenId) {
+            ['screenSetup', 'screenReveal', 'screenGameplay', 'screenVoting', 'screenResult'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+                document.getElementById(id).classList.remove('flex');
+            });
+            const target = document.getElementById(screenId);
+            target.classList.remove('hidden');
+            target.classList.add('flex');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // -------------------------------------------------------------
+        // 4. WORD MANAGER MODAL LOGIC
+        // -------------------------------------------------------------
+        function openWordManager() {
+            AudioFX.playClick();
+            renderWordManagerList();
+            document.getElementById('wordManagerModal').classList.remove('hidden');
+        }
+
+        function closeWordManager() {
+            AudioFX.playClick();
+            document.getElementById('wordManagerModal').classList.add('hidden');
+        }
+
+        function renderWordManagerList() {
+            const container = document.getElementById('wordsManagerList');
+            container.innerHTML = '';
+
+            const searchQuery = document.getElementById('wordSearchInput').value.trim().toLowerCase();
+            let totalEnabled = 0;
+
+            defaultCategories.filter(c => c.id !== 'custom').forEach(cat => {
+                const wordsList = cat.words[currentLang] || cat.words.en || [];
+                const filteredWords = wordsList.filter(w => w.toLowerCase().includes(searchQuery));
+
+                if (filteredWords.length === 0) return;
+
+                const catHeader = document.createElement('div');
+                catHeader.className = 'text-xs font-bold text-purple-300 pb-1 border-b border-slate-700/60 flex items-center gap-1.5';
+                catHeader.innerHTML = `<span>${cat.icon}</span> <span>${cat.names[currentLang] || cat.names.en}</span>`;
+                container.appendChild(catHeader);
+
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-2 gap-1.5 pt-1 pb-2';
+
+                filteredWords.forEach(word => {
+                    const isDisabled = disabledWords.has(word);
+                    if (!isDisabled) totalEnabled++;
+
+                    const item = document.createElement('button');
+                    item.className = `p-2 rounded-xl text-xs font-semibold border flex items-center justify-between transition ${
+                        isDisabled 
+                            ? 'bg-slate-900/40 border-slate-800 text-slate-600 line-through' 
+                            : 'bg-slate-800/80 border-slate-700 text-slate-200 hover:border-purple-500'
+                    }`;
+
+                    item.onclick = () => {
+                        AudioFX.playClick();
+                        if (disabledWords.has(word)) {
+                            disabledWords.delete(word);
+                        } else {
+                            disabledWords.add(word);
+                        }
+                        renderWordManagerList();
+                    };
+
+                    item.innerHTML = `
+                        <span class="truncate">${word}</span>
+                        <i class="fa-solid ${isDisabled ? 'fa-xmark text-rose-500' : 'fa-check text-emerald-400'} text-[10px]"></i>
+                    `;
+                    grid.appendChild(item);
+                });
+
+                container.appendChild(grid);
+            });
+
+            document.getElementById('txtWordCountInfo').textContent = (currentLang === 'ar' ? `الكلمات المفعلة: ` : `Words active: `) + totalEnabled;
+        }
+
+        // -------------------------------------------------------------
+        // 5. GAME ENGINE LOGIC
+        // -------------------------------------------------------------
+        function addPlayer(name) {
+            const clean = name.trim();
+            if (!clean) return;
+            players.push(clean);
+            renderPlayersTags();
+        }
+
+        window.removePlayer = function(index) {
+            if (players.length <= 3) return;
+            players.splice(index, 1);
+            renderPlayersTags();
+        };
+
+        function startNewGame() {
+            AudioFX.init();
+            AudioFX.playClick();
+
+            if (players.length < 3) return;
+
+            if (selectedCategories.length === 0) {
+                alert(translations[currentLang].noCategorySelectedErr);
+                return;
+            }
+
+            // Pool of possible words based on selected categories
+            let availableWordPool = [];
+
+            selectedCategories.forEach(catId => {
+                if (catId === 'custom') {
+                    const customLines = document.getElementById('customWordsInput').value
+                        .split('\n')
+                        .map(l => l.trim())
+                        .filter(l => l.length > 0);
+                    customLines.forEach(w => {
+                        availableWordPool.push({ word: w, categoryName: defaultCategories.find(c => c.id === 'custom').names[currentLang] });
+                    });
+                } else {
+                    const catObj = defaultCategories.find(c => c.id === catId);
+                    if (catObj) {
+                        const wordsList = catObj.words[currentLang] || catObj.words.en || [];
+                        const filtered = wordsList.filter(w => !disabledWords.has(w));
+                        const cName = catObj.names[currentLang] || catObj.names.en;
+                        filtered.forEach(w => {
+                            availableWordPool.push({ word: w, categoryName: cName });
+                        });
+                    }
+                }
+            });
+
+            if (availableWordPool.length === 0) {
+                alert(currentLang === 'ar' ? 'لا توجد كلمات متاحة! تحقق من إدارة الكلمات والتصنيفات.' : 'No available words! Check word settings.');
+                return;
+            }
+
+            // Pick secret word randomly from combined pool
+            const picked = availableWordPool[Math.floor(Math.random() * availableWordPool.length)];
+            currentSecretWord = picked.word;
+            currentCategoryHint = picked.categoryName;
+
+            // Pick imposters based on flexible count
+            let impCount = parseInt(imposterCountSetting);
+            if (impCount >= players.length) impCount = players.length - 1;
+            
+            currentImposterIndices = [];
+            while (currentImposterIndices.length < impCount) {
+                const rand = Math.floor(Math.random() * players.length);
+                if (!currentImposterIndices.includes(rand)) {
+                    currentImposterIndices.push(rand);
+                }
+            }
+
+            // Reset reveal index
+            currentRevealIndex = 0;
+            setupPlayerRevealScreen();
+            switchScreen('screenReveal');
+        }
+
+        function setupPlayerRevealScreen() {
+            const pName = players[currentRevealIndex];
+            document.getElementById('currentPlayerName').textContent = pName;
+
+            // Player dots
+            const dotsContainer = document.getElementById('playerDotsContainer');
+            dotsContainer.innerHTML = '';
+            players.forEach((_, idx) => {
+                const dot = document.createElement('div');
+                dot.className = `w-2 h-2 rounded-full transition-all ${
+                    idx === currentRevealIndex ? 'bg-rose-500 w-5' : (idx < currentRevealIndex ? 'bg-emerald-500' : 'bg-slate-700')
+                }`;
+                dotsContainer.appendChild(dot);
+            });
+
+            // Reset Card View
+            document.getElementById('cardHiddenView').classList.remove('hidden');
+            document.getElementById('cardRevealedView').classList.add('hidden');
+            document.getElementById('nextPlayerBtn').classList.add('hidden');
+            document.getElementById('holdRevealBtn').classList.remove('hidden');
+
+            const isImposter = currentImposterIndices.includes(currentRevealIndex);
+            
+            if (isImposter) {
+                document.getElementById('roleNormalView').classList.add('hidden');
+                document.getElementById('roleImposterView').classList.remove('hidden');
+                
+                const hintBox = document.getElementById('imposterHintBox');
+                if (showHintSetting && currentCategoryHint) {
+                    hintBox.classList.remove('hidden');
+                    document.getElementById('imposterHintText').textContent = currentCategoryHint;
+                } else {
+                    hintBox.classList.add('hidden');
+                }
+            } else {
+                document.getElementById('roleImposterView').classList.add('hidden');
+                document.getElementById('roleNormalView').classList.remove('hidden');
+                document.getElementById('secretWordDisplay').textContent = currentSecretWord;
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 6. REVEAL HOLD INTERACTION
+        // -------------------------------------------------------------
+        let holdTimer = null;
+        let holdProgress = 0;
+        const holdBtn = document.getElementById('holdRevealBtn');
+        const progressBar = document.getElementById('holdProgressBar');
+
+        function startHold(e) {
+            e.preventDefault();
+            AudioFX.init();
+            triggerHaptic(20);
+            holdProgress = 0;
+            progressBar.style.width = '0%';
+
+            holdTimer = setInterval(() => {
+                holdProgress += 10;
+                progressBar.style.width = holdProgress + '%';
+                if (holdProgress >= 100) {
+                    clearInterval(holdTimer);
+                    revealSecret();
+                }
+            }, 30);
+        }
+
+        function cancelHold() {
+            if (holdTimer) clearInterval(holdTimer);
+            holdProgress = 0;
+            progressBar.style.width = '0%';
+            hideSecret();
+        }
+
+        function revealSecret() {
+            AudioFX.playReveal();
+            triggerHaptic(60);
+            document.getElementById('cardHiddenView').classList.add('hidden');
+            document.getElementById('cardRevealedView').classList.remove('hidden');
+            document.getElementById('holdRevealBtn').classList.add('hidden');
+            document.getElementById('nextPlayerBtn').classList.remove('hidden');
+        }
+
+        function hideSecret() {
+            if (!document.getElementById('cardRevealedView').classList.contains('hidden') && 
+                document.getElementById('nextPlayerBtn').classList.contains('hidden')) {
+                document.getElementById('cardHiddenView').classList.remove('hidden');
+                document.getElementById('cardRevealedView').classList.add('hidden');
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 7. GAMEPLAY & TIMER LOGIC
+        // -------------------------------------------------------------
+        function startGameplayPhase() {
+            switchScreen('screenGameplay');
+
+            // Pick random starting player for clue round
+            const firstIdx = Math.floor(Math.random() * players.length);
+            document.getElementById('firstPlayerName').textContent = players[firstIdx];
+
+            // Reset Timer
+            resetTimer();
+            generateIcebreakerQuestion();
+        }
+
+        function generateIcebreakerQuestion() {
+            const list = icebreakerQuestions[currentLang] || icebreakerQuestions.en;
+            const randQ = list[Math.floor(Math.random() * list.length)];
+            const randP = players[Math.floor(Math.random() * players.length)];
+            document.getElementById('questionBox').textContent = `"${randQ.replace('{P}', randP)}"`;
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timerSecondsLeft = 180;
+            updateTimerDisplay();
+            const t = translations[currentLang];
+            document.getElementById('txtBtnStartTimer').textContent = t.btnStartTimer;
+            document.getElementById('timerIcon').className = 'fa-solid fa-play';
+        }
+
+        function toggleTimer() {
+            AudioFX.playClick();
+            const t = translations[currentLang];
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                document.getElementById('txtBtnStartTimer').textContent = t.btnStartTimer;
+                document.getElementById('timerIcon').className = 'fa-solid fa-play';
+            } else {
+                isTimerRunning = true;
+                document.getElementById('txtBtnStartTimer').textContent = t.btnPauseTimer;
+                document.getElementById('timerIcon').className = 'fa-solid fa-pause';
+                
+                timerInterval = setInterval(() => {
+                    if (timerSecondsLeft > 0) {
+                        timerSecondsLeft--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                        triggerHaptic([100, 100, 100]);
+                        AudioFX.playVictory();
+                        document.getElementById('txtBtnStartTimer').textContent = t.btnStartTimer;
+                        document.getElementById('timerIcon').className = 'fa-solid fa-play';
+                    }
+                }, 1000);
+            }
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSecondsLeft / 60).toString().padStart(2, '0');
+            const secs = (timerSecondsLeft % 60).toString().padStart(2, '0');
+            document.getElementById('timerDisplay').textContent = `${mins}:${secs}`;
+        }
+
+        // -------------------------------------------------------------
+        // 8. VOTING & RESULTS LOGIC
+        // -------------------------------------------------------------
+        function setupVotingGrid() {
+            selectedSuspectIndex = null;
+            const grid = document.getElementById('votingGrid');
+            grid.innerHTML = '';
+
+            const confirmBtn = document.getElementById('confirmVoteBtn');
+            confirmBtn.disabled = true;
+            confirmBtn.className = 'w-full py-3.5 bg-slate-800 text-slate-500 font-extrabold text-base rounded-2xl border border-slate-700 transition flex items-center justify-center gap-2 cursor-not-allowed';
+
+            players.forEach((pName, idx) => {
+                const card = document.createElement('button');
+                card.className = 'p-3.5 rounded-2xl glass-panel border border-slate-700/80 text-center flex flex-col items-center justify-center gap-1 transition active:scale-95';
+                card.onclick = () => {
+                    AudioFX.playClick();
+                    selectedSuspectIndex = idx;
+                    
+                    // Highlight selected
+                    Array.from(grid.children).forEach(c => c.classList.remove('border-rose-500', 'bg-rose-500/20', 'glow-red'));
+                    card.classList.add('border-rose-500', 'bg-rose-500/20', 'glow-red');
+
+                    confirmBtn.disabled = false;
+                    confirmBtn.className = 'w-full py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-base rounded-2xl shadow-xl shadow-rose-600/30 transition flex items-center justify-center gap-2 active:scale-[0.98]';
+                };
+
+                card.innerHTML = `
+                    <span class="text-2xl">👤</span>
+                    <span class="text-xs font-bold text-slate-100">${pName}</span>
+                `;
+                grid.appendChild(card);
+            });
+
+            switchScreen('screenVoting');
+        }
+
+        function evaluateResult() {
+            AudioFX.init();
+            const t = translations[currentLang];
+            const isCaught = currentImposterIndices.includes(selectedSuspectIndex);
+
+            document.getElementById('resultSecretWord').textContent = currentSecretWord;
+            document.getElementById('resultImpostersList').textContent = currentImposterIndices.map(i => players[i]).join(', ');
+
+            const comebackSection = document.getElementById('imposterComebackSection');
+            document.getElementById('guessFeedback').classList.add('hidden');
+            document.getElementById('imposterGuessInput').value = '';
+
+            if (isCaught) {
+                // Imposter was caught
+                AudioFX.playVictory();
+                scores.citizens++;
+                document.getElementById('resultIcon').textContent = '🎉';
+                document.getElementById('resultIcon').className = 'w-20 h-20 rounded-full mx-auto flex items-center justify-center text-4xl shadow-xl bg-emerald-500/20 border-2 border-emerald-500 text-emerald-400 glow-cyan';
+                document.getElementById('resultHeadline').textContent = t.winCitizensHeadline;
+                document.getElementById('resultSubtext').textContent = t.winCitizensSub;
+
+                // Show comeback guess input
+                comebackSection.classList.remove('hidden');
+            } else {
+                // Imposter escaped
+                AudioFX.playVictory();
+                scores.imposters++;
+                document.getElementById('resultIcon').textContent = '🕵️‍♂️';
+                document.getElementById('resultIcon').className = 'w-20 h-20 rounded-full mx-auto flex items-center justify-center text-4xl shadow-xl bg-rose-500/20 border-2 border-rose-500 text-rose-400 glow-red';
+                document.getElementById('resultHeadline').textContent = t.winImposterHeadline;
+                document.getElementById('resultSubtext').textContent = t.winImposterSub;
+
+                comebackSection.classList.add('hidden');
+            }
+
+            document.getElementById('scoreCitizensVal').textContent = scores.citizens;
+            document.getElementById('scoreImpostersVal').textContent = scores.imposters;
+
+            switchScreen('screenResult');
+        }
+
+        function handleImposterGuess() {
+            const guess = document.getElementById('imposterGuessInput').value.trim();
+            if (!guess) return;
+
+            const t = translations[currentLang];
+            const feedback = document.getElementById('guessFeedback');
+            feedback.classList.remove('hidden');
+
+            if (guess.toLowerCase() === currentSecretWord.toLowerCase()) {
+                scores.citizens = Math.max(0, scores.citizens - 1);
+                scores.imposters++;
+                document.getElementById('scoreCitizensVal').textContent = scores.citizens;
+                document.getElementById('scoreImpostersVal').textContent = scores.imposters;
+
+                feedback.className = 'text-xs font-bold text-emerald-400 pt-1';
+                feedback.textContent = t.guessSuccess;
+                AudioFX.playVictory();
+            } else {
+                feedback.className = 'text-xs font-bold text-rose-400 pt-1';
+                feedback.textContent = t.guessWrong;
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 9. EVENT LISTENERS INITIALIZATION
+        // -------------------------------------------------------------
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // Language Toggle Event
+            document.getElementById('langToggleBtn').addEventListener('click', () => {
+                AudioFX.playClick();
+                if (currentLang === 'ar') currentLang = 'fr';
+                else if (currentLang === 'fr') currentLang = 'en';
+                else currentLang = 'ar';
+                applyTranslations();
+            });
+
+            // Sound Toggle Event
+            document.getElementById('soundToggleBtn').addEventListener('click', () => {
+                soundEnabled = !soundEnabled;
+                document.getElementById('soundToggleBtn').innerHTML = soundEnabled 
+                    ? '<i class="fa-solid fa-volume-high text-sm"></i>' 
+                    : '<i class="fa-solid fa-volume-xmark text-sm text-rose-400"></i>';
+            });
+
+            // Player Add Events
+            document.getElementById('addPlayerBtn').addEventListener('click', () => {
+                const input = document.getElementById('playerNameInput');
+                addPlayer(input.value);
+                input.value = '';
+            });
+            document.getElementById('playerNameInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addPlayer(e.target.value);
+                    e.target.value = '';
+                }
+            });
+
+            // Flexible Imposter Count Buttons (- / +)
+            document.getElementById('decImposterBtn').addEventListener('click', () => {
+                AudioFX.playClick();
+                if (imposterCountSetting > 1) {
+                    imposterCountSetting--;
+                    updateImposterCountDisplay();
+                }
+            });
+            document.getElementById('incImposterBtn').addEventListener('click', () => {
+                AudioFX.playClick();
+                const maxAllowed = Math.max(1, players.length - 1);
+                if (imposterCountSetting < maxAllowed) {
+                    imposterCountSetting++;
+                    updateImposterCountDisplay();
+                }
+            });
+
+            // Multi Category Select All / Deselect All Toggle
+            document.getElementById('btnToggleSelectAllCats').addEventListener('click', () => {
+                AudioFX.playClick();
+                const allStandardIds = defaultCategories.filter(c => c.id !== 'custom').map(c => c.id);
+                const allSelected = allStandardIds.every(id => selectedCategories.includes(id));
+
+                if (allSelected) {
+                    selectedCategories = [];
+                } else {
+                    selectedCategories = [...allStandardIds];
+                }
+                renderCategoryGrid();
+                updateSelectAllButtonText();
+            });
+
+            // Word Manager Modal Handlers
+            document.getElementById('btnManageWords').addEventListener('click', openWordManager);
+            document.getElementById('btnCloseModal').addEventListener('click', closeWordManager);
+            document.getElementById('btnSaveWordsManager').addEventListener('click', closeWordManager);
+            document.getElementById('wordSearchInput').addEventListener('input', renderWordManagerList);
+            document.getElementById('btnResetDisabledWords').addEventListener('click', () => {
+                AudioFX.playClick();
+                disabledWords.clear();
+                renderWordManagerList();
+            });
+
+            // Hint Toggle
+            document.getElementById('hintToggleBtn').addEventListener('click', () => {
+                AudioFX.playClick();
+                showHintSetting = !showHintSetting;
+                const toggleDiv = document.getElementById('hintToggleBtn');
+                const handle = toggleDiv.querySelector('div');
+                if (showHintSetting) {
+                    toggleDiv.className = 'w-12 h-6 bg-rose-600 rounded-full relative p-0.5 transition-colors focus:outline-none';
+                    handle.className = 'w-5 h-5 bg-white rounded-full transition-transform transform translate-x-6 ltr:-translate-x-6 shadow';
+                } else {
+                    toggleDiv.className = 'w-12 h-6 bg-slate-700 rounded-full relative p-0.5 transition-colors focus:outline-none';
+                    handle.className = 'w-5 h-5 bg-white rounded-full transition-transform transform translate-x-0 shadow';
+                }
+            });
+
+            // Start Game
+            document.getElementById('startGameBtn').addEventListener('click', startNewGame);
+
+            // Hold & Reveal Touch/Mouse Events
+            const holdBtnEl = document.getElementById('holdRevealBtn');
+            holdBtnEl.addEventListener('mousedown', startHold);
+            holdBtnEl.addEventListener('mouseup', cancelHold);
+            holdBtnEl.addEventListener('mouseleave', cancelHold);
+            holdBtnEl.addEventListener('touchstart', startHold);
+            holdBtnEl.addEventListener('touchend', cancelHold);
+
+            // Next Player Confirm
+            document.getElementById('nextPlayerBtn').addEventListener('click', () => {
+                AudioFX.playClick();
+                currentRevealIndex++;
+                if (currentRevealIndex < players.length) {
+                    setupPlayerRevealScreen();
+                } else {
+                    startGameplayPhase();
+                }
+            });
+
+            // Gameplay Controls
+            document.getElementById('timerToggleBtn').addEventListener('click', toggleTimer);
+            document.getElementById('timerResetBtn').addEventListener('click', resetTimer);
+            document.getElementById('nextQuestionBtn').addEventListener('click', () => {
+                AudioFX.playClick();
+                generateIcebreakerQuestion();
+            });
+            document.getElementById('goToVoteBtn').addEventListener('click', () => {
+                AudioFX.playClick();
+                clearInterval(timerInterval);
+                setupVotingGrid();
+            });
+
+            // Voting & Result
+            document.getElementById('confirmVoteBtn').addEventListener('click', evaluateResult);
+            document.getElementById('submitGuessBtn').addEventListener('click', handleImposterGuess);
+
+            // Replay Actions
+            document.getElementById('playAgainBtn').addEventListener('click', startNewGame);
+            document.getElementById('backToSetupBtn').addEventListener('click', () => {
+                AudioFX.playClick();
+                switchScreen('screenSetup');
+            });
+
+            // Initial Translation & Setup
+            applyTranslations();
+        });
+    </script>
+    </body>
+</html>
